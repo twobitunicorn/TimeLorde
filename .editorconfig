@@ -1,0 +1,5 @@
+root = true
+
+[{src,scripts}/**.{ts,json,js}]
+indent_style =  tab
+ident_size = 4

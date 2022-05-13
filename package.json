@@ -5,10 +5,15 @@
 	"license": "ISC",
 	"description": "A library for generating time series.",
 	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"/dist"
+	],
 	"exports": {
-		".": "./dist/index.js"
+		".": "./dist/index.js",
+		"./luxon": "./dist/luxon.js"
 	},
-	"types": "dist/types.d.ts",
 	"scripts": {
 		"build": "tsc",
 		"test": "jest",

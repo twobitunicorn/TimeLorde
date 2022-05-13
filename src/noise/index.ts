@@ -1,2 +1,2 @@
-export { Gaussian } from "./Gaussian";
-export { Red } from "./Red";
+export { Gaussian } from "./Gaussian.js";
+export { Red } from "./Red.js";

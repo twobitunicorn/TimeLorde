@@ -1,6 +1,6 @@
 import * as tf from "@tensorflow/tfjs-node";
 import { assert } from "console";
-import { Signal } from "../Signal";
+import { Signal } from "../Signal.js";
 import { Duration, Interval } from "luxon";
 
 /**

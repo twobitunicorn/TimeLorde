@@ -1,3 +1,3 @@
-export { Flat } from "./Flat";
-export { Linear } from "./Linear";
-export { Exponential } from "./Exponential";
+export { Flat } from "./Flat.js";
+export { Linear } from "./Linear.js";
+export { Exponential } from "./Exponential.js";

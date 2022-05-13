@@ -1,5 +1,5 @@
 import * as tf from "@tensorflow/tfjs-node";
-import { Signal } from "../Signal";
+import { Signal } from "../Signal.js";
 import { Interval, Duration } from "luxon";
 
 /**

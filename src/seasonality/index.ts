@@ -1,2 +1,2 @@
-export { Sinusoidal } from "./Sinusoidal";
+export { Sinusoidal } from "./Sinusoidal.js";
 // export { Square } from "./Square";

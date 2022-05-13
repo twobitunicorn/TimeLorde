@@ -189,7 +189,7 @@ series.map(({date, ...rest}) =>  {return {date: date.toISO(), ...rest}})
 
 Taking the values for this series and putting it into our favorite graphing software we get the following graph.
 
-/img/intro_graph.png
+https://github.com/twobitunicorn/TimeLorde/blob/50520fde4bdf80e495eb427639e9f337a8cae98d/img/intro_graph.png
 
 For the rest of the *README* we will only show the resulting graph of the series and not the data of the series.
 

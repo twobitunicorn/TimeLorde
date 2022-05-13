@@ -9,21 +9,20 @@ It is easy to get up and running.  You must add it into your `javascript` or `ty
 
 ### pnpm
 ```shell
-pnpm add @timelorde
+pnpm add timelorde
 ```
 
 ### yarn
 ```shell 
-yarn install @timelorde
+yarn install timelorde
 ```
 
 ### npm
 ```shell
-npm install @timelorde
+npm install timelorde
 ```
 
 This should install `timelorde` into your project. 
-
 
 ## Developing
 

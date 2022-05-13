@@ -1,7 +1,8 @@
-![Time Lorde](https://github.com/twobitunicorn/TimeLorde/blob/015fed4c5dc1a13dc8a7d5e4f5aee7437d7751b5/img/cool_image.png)
+![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/cool_image.png)
 
 # Time Lorde
 Creating time series for demos or testing purposes can be challenging.  The `timelorde` library solves this problem for you.  Using `Luxon` dates as native units of the `x` axis makes it easy to produce signals that work over arbitrary intervals of time.  The library makes it convenient to produce various time series with `trends`, `seasonality`, and `noise`.
+
 
 ## Installing / Getting started
 
@@ -22,8 +23,18 @@ yarn install @timelorde
 npm install @timelorde
 ```
 
-This should install `timelorde` into your project. 
+This should install `timelorde` into your project.  You just need to import the signals you want from `timelorde`.  For example
 
+```
+import {Linear, Sinusoidal, Red} from "timelorde";
+```
+
+Will import 
+If you do not already use the `luxon` library you can import the needed types from `timelorde/luxon`.
+
+```
+import { Interval, DateTime, Duration,  } from "timelorde/luxon";
+```
 
 ## Developing
 
@@ -35,121 +46,67 @@ With a bit of understanding how to create the basic `Luxon` types we can start u
 * noise
 
 Each of the signal types implement a `sample` method that will sample over an `Interval` instance and a fixed `Duration` that represents the granularity of the sampling.  For example, using the type `Linear` with the formal constructor
+
 ```ts
 Linear(gradient: number, duration: Duration, intercept = 0.0)
 ```
 
 we can create a linear trend that will climb at the rate of the `gradient` over the `duration` of the trend starting at the `intercept` given by the client.
 
-With the following code we will sample the linear signal over the span of a week with the granularity of a single day.
+With the following code we will sample the linear signal over the span of a month with the granularity of 4 days and starting with an intercept of 100.  Along with this signal we also include two different seasonal signals and some red noise to make it look realistic.  We can also observe that we can `add` two signals together to get a composite signal.
 
 ```ts
-import { DateTime, Duration, Interval } from '@timelorde/luxon'
-import { Linear } from '@timelorde/trends'
+import { Interval, DateTime, Duration,  } from "timelorde/luxon";
+import {Linear, Sinusoidal, Red} from "timelorde";
 
-const start = DateTime.fromISO("2022-03-03")
+
+const trend = new Linear(2, Duration.fromObject({days: 4}), 100)
+const seasonality = new Sinusoidal(20, Duration.fromObject({days: 7})).add(new Sinusoidal(4, Duration.fromObject({days: 1})))
+const noise = new Red(0, 3, 0.5)
+const timeseries = trend.add(seasonality).add(noise)
+
+const start = DateTime.fromISO("2022-02-10")
 const end = DateTime.fromISO("2022-03-10")
 const interval = Interval.fromDateTimes(start, end)
-const trend = new Linear(2, Duration.fromObject({week: 1}), 8)
-const series = trend.sample(interval, Duration.fromObject({hours: 1}))
+
+const series = timeseries.sample(interval, Duration.fromObject({hours: 1}))
 ```
 
-The return type of `Signal.sample` is an array of type `Sample[]`.  The `Sample` type represents the relationship between a `DateTime` instance and the `value` given for that instance as given for the interval and granularity of the sample.  Inspecting the state of `series` we will see
+The return type of `Signal.sample` is an array of type `Sample[]`.  The `Sample` type represents the relationship between a `DateTime` instance and the `value` given for that instance as given for the interval and granularity of the sample.  Inspecting the state of `series[67]` we will have
 
 ```ts
-[
-  {
-    date: DateTime {
-      ts: 1646294400000,
-      _zone: SystemZone {},
-      loc: [Locale],
-      invalid: null,
-      weekData: null,
-      c: [Object],
-      o: -480,
-      isLuxonDateTime: true
+{
+  date: DateTime {
+    ts: 1644721200000,
+    _zone: SystemZone {},
+    loc: Locale {
+      locale: 'en-US',
+      numberingSystem: null,
+      outputCalendar: null,
+      intl: 'en-US',
+      weekdaysCache: [Object],
+      monthsCache: [Object],
+      meridiemCache: null,
+      eraCache: {},
+      specifiedLocale: null,
+      fastNumbersCached: null
     },
-    value: 8
+    invalid: null,
+    weekData: null,
+    c: {
+      year: 2022,
+      month: 2,
+      day: 12,
+      hour: 19,
+      minute: 0,
+      second: 0,
+      millisecond: 0
+    },
+    o: -480,
+    isLuxonDateTime: true
   },
-  {
-    date: DateTime {
-      ts: 1646380800000,
-      _zone: SystemZone {},
-      loc: [Locale],
-      invalid: null,
-      weekData: null,
-      c: [Object],
-      o: -480,
-      isLuxonDateTime: true
-    },
-    value: 8.285714149475098
-  },
-  {
-    date: DateTime {
-      ts: 1646467200000,
-      _zone: SystemZone {},
-      loc: [Locale],
-      invalid: null,
-      weekData: null,
-      c: [Object],
-      o: -480,
-      isLuxonDateTime: true
-    },
-    value: 8.571428298950195
-  },
-  {
-    date: DateTime {
-      ts: 1646553600000,
-      _zone: SystemZone {},
-      loc: [Locale],
-      invalid: null,
-      weekData: null,
-      c: [Object],
-      o: -480,
-      isLuxonDateTime: true
-    },
-    value: 8.85714340209961
-  },
-  {
-    date: DateTime {
-      ts: 1646640000000,
-      _zone: SystemZone {},
-      loc: [Locale],
-      invalid: null,
-      weekData: null,
-      c: [Object],
-      o: -480,
-      isLuxonDateTime: true
-    },
-    value: 9.142857551574707
-  },
-  {
-    date: DateTime {
-      ts: 1646726400000,
-      _zone: SystemZone {},
-      loc: [Locale],
-      invalid: null,
-      weekData: null,
-      c: [Object],
-      o: -480,
-      isLuxonDateTime: true
-    },
-    value: 9.428571701049805
-  },
-  {
-    date: DateTime {
-      ts: 1646812800000,
-      _zone: SystemZone {},
-      loc: [Locale],
-      invalid: null,
-      weekData: null,
-      c: [Object],
-      o: -480,
-      isLuxonDateTime: true
-    },
-    value: 9.714285850524902
-  }
-]
+  value: 108.215576171875
+}
 ``` 
 
 Each element of the array is of type `Sample`. This type has the declaration
@@ -189,7 +146,7 @@ series.map(({date, ...rest}) =>  {return {date: date.toISO(), ...rest}})
 
 Taking the values for this series and putting it into our favorite graphing software we get the following graph.
 
-https://github.com/twobitunicorn/TimeLorde/blob/50520fde4bdf80e495eb427639e9f337a8cae98d/img/intro_graph.png
+https://github.com/twobitunicorn/TimeLorde/raw/main/img/intro_graph.png
 
 For the rest of the *README* we will only show the resulting graph of the series and not the data of the series.
 
@@ -199,6 +156,14 @@ To export to CSV reduce the series to a single string and output as you see fit.
 ```ts
 series.reduce((acc, {date, value}) => {return acc + `${date},${value}\n`}, "date,values\n")
 ```
+
+You can do some data transformation also that will clean up the output.  For example, we can use `toISODate()` and `toFixed(number)`
+
+```ts
+series.reduce((acc, {date, value}) => {return acc + `${date.toISODate()},${value.toFixed(2)}\n`}, "date,values\n")
+```
+
+to limit the values of our example to days representation and numbers to the 2nd digit.
 
 ### Trend
 

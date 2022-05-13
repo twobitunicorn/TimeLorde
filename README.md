@@ -1,4 +1,4 @@
-![Logo of the project](https://raw.githubusercontent.com/jehna/readme-best-practices/master/sample-logo.png)
+![Time Lorde](https://github.com/twobitunicorn/TimeLorde/blob/50520fde4bdf80e495eb427639e9f337a8cae98d/img/intro_graph.png)
 
 # Time Lorde
 Creating time series for demos or testing purposes can be challenging.  The `timelorde` library solves this problem for you.  Using `Luxon` dates as native units of the `x` axis makes it easy to produce signals that work over arbitrary intervals of time.  The library makes it convenient to produce various time series with `trends`, `seasonality`, and `noise`.

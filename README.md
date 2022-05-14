@@ -3,6 +3,7 @@
 # Time Lorde
 Creating time series for demos or testing purposes can be challenging.  The `timelorde` library solves this problem for you.  Using `Luxon` dates as native units of the `x` axis makes it easy to produce signals that work over arbitrary intervals of time.  The library makes it convenient to produce various time series with `trends`, `seasonality`, and `noise`.
 
+https://github.com/twobitunicorn/TimeLorde/raw/main/img/intro_graph.png
 
 ## Installing / Getting started
 
@@ -10,26 +11,25 @@ It is easy to get up and running.  You must add it into your `javascript` or `ty
 
 ### pnpm
 ```shell
-pnpm add @timelorde
+pnpm add timelorde
 ```
 
 ### yarn
 ```shell 
-yarn install @timelorde
+yarn install timelorde
 ```
 
 ### npm
 ```shell
-npm install @timelorde
+npm install timelorde
 ```
 
-This should install `timelorde` into your project.  You just need to import the signals you want from `timelorde`.  For example
+This should install `timelorde` into your project. 
 
-```
-import {Linear, Sinusoidal, Red} from "timelorde";
-```
+## Luxon
 
-Will import 
+This library makes use of the [`Luxon`](https://moment.github.io/luxon) time and date library.  This excellent library has three primary types that we use in this project: the `DateTime` type, the `Duration` type, and the `Interval` type.  The `DateTime` is an immutable data structure that represents a specific date and accompanying methods.  The `Duration` type represents a period of time such as 2 months or 1 day.  The `Interval` type is an object representing a half-open interval of time where each endpoint is a `DateTime` object.  The `Luxon` library also includes various types to help with the complexity of time zones.  Please check out their documentation [here](https://moment.github.io/luxon/api-docs/)
+
 If you do not already use the `luxon` library you can import the needed types from `timelorde/luxon`.
 
 ```
@@ -37,9 +37,6 @@ import { Interval, DateTime, Duration,  } from "timelorde/luxon";
 ```
 
 ## Developing
-
-This library makes use of the [`Luxon`](https://moment.github.io/luxon) time and date library.  This excellent library has three primary types that we use in this project: the `DateTime` type, the `Duration` type, and the `Interval` type.  The `DateTime` is an immutable data structure that represents a specific date and accompanying methods.  The `Duration` type represents a period of time such as 2 months or 1 day, 1 hour.  The `Interval` type is an object representing a half-open interval of time where each endpoint is a `DateTime` object.  The `Luxon` library also includes various types to help with the complexity of time zones.  Please check out their documentation [here](https://moment.github.io/luxon/api-docs/)
-
 With a bit of understanding how to create the basic `Luxon` types we can start using our library.  We have three major types of signals:
 * trend
 * seasonality
@@ -72,98 +69,19 @@ const interval = Interval.fromDateTimes(start, end)
 const series = timeseries.sample(interval, Duration.fromObject({hours: 1}))
 ```
 
-The return type of `Signal.sample` is an array of type `Sample[]`.  The `Sample` type represents the relationship between a `DateTime` instance and the `value` given for that instance as given for the interval and granularity of the sample.  Inspecting the state of `series[67]` we will have
+The return type of `Signal.sample` is an array of type `Sample[]`.  The `Sample` type represents the relationship between a `DateTime` instance and the `value` given for that instance as given for the interval and granularity of the sample.
 
-```ts
-{
-  date: DateTime {
-    ts: 1644721200000,
-    _zone: SystemZone {},
-    loc: Locale {
-      locale: 'en-US',
-      numberingSystem: null,
-      outputCalendar: null,
-      intl: 'en-US',
-      weekdaysCache: [Object],
-      monthsCache: [Object],
-      meridiemCache: null,
-      eraCache: {},
-      specifiedLocale: null,
-      fastNumbersCached: null
-    },
-    invalid: null,
-    weekData: null,
-    c: {
-      year: 2022,
-      month: 2,
-      day: 12,
-      hour: 19,
-      minute: 0,
-      second: 0,
-      millisecond: 0
-    },
-    o: -480,
-    isLuxonDateTime: true
-  },
-  value: 108.215576171875
-}
-``` 
+Using our series we can transform the `Sample` type into something our graphing software can recognize.  The one I use expects a CVS input.  I achieve this using a reduction on the series below.
 
-Each element of the array is of type `Sample`. This type has the declaration
-
-```ts
-interface Sample {
-	date: DateTime;
-	value: number;
-}
 ```
-
-Outputting a more palatable version of the series can be done with either `JSON.stringify` or a simple map.
-
-For example,
-```ts
-console.log(JSON.stringify(series))
-```
-
-will give us
-```ts
-[
-  { "date": "2022-03-03T00:00:00.000-08:00", "value": 8 },
-  { "date": "2022-03-04T00:00:00.000-08:00", "value": 8.285714149475098 },
-  { "date": "2022-03-05T00:00:00.000-08:00", "value": 8.571428298950195 },
-  { "date": "2022-03-06T00:00:00.000-08:00", "value": 8.85714340209961 },
-  { "date": "2022-03-07T00:00:00.000-08:00", "value": 9.142857551574707 },
-  { "date": "2022-03-08T00:00:00.000-08:00", "value": 9.428571701049805 },
-  { "date": "2022-03-09T00:00:00.000-08:00", "value": 9.714285850524902 }
-]
-```
-
-which is equal to 
-
-```ts
-series.map(({date, ...rest}) =>  {return {date: date.toISO(), ...rest}})
+series.reduce((acc, {date, value}) => {return acc + `${date.toISODate()},${value.toFixed(2)}\n`}, "date,values\n")
 ```
 
 Taking the values for this series and putting it into our favorite graphing software we get the following graph.
 
-https://github.com/twobitunicorn/TimeLorde/raw/main/img/intro_graph.png
+https://github.com/twobitunicorn/TimeLorde/raw/main/img/working_graph.png
 
 For the rest of the *README* we will only show the resulting graph of the series and not the data of the series.
-
-## Pro Tip
-To export to CSV reduce the series to a single string and output as you see fit.
-
-```ts
-series.reduce((acc, {date, value}) => {return acc + `${date},${value}\n`}, "date,values\n")
-```
-
-You can do some data transformation also that will clean up the output.  For example, we can use `toISODate()` and `toFixed(number)`
-
-```ts
-series.reduce((acc, {date, value}) => {return acc + `${date.toISODate()},${value.toFixed(2)}\n`}, "date,values\n")
-```
-
-to limit the values of our example to days representation and numbers to the 2nd digit.
 
 ### Trend
 
@@ -189,29 +107,8 @@ const series = trend.sample(interval, Duration.fromObject({hours: 12}))
 ```
 
 ### Seasonality
-The seasonality signals represent the signals that have a period to them.  They are found in the 
-A flat trend represents a trend that stays flat through time.  A linear trend represents a trend that grows by For example,
-```ts
-import { DateTime, Duration, Interval } from '@timelorde/luxon'
-import { Flat } from '@timelorde/trends'
-
-const start = DateTime.fromISO("2021-03-03")
-const duration = Duration.fromObject({year: 1})
-const interval = Interval.after(start, duration)
-const trend = new Flat(7)
-const series = trend.sample(interval, Duration.fromObject({hours: 12}))
-```
-gives us the graph
-
-/img/flat_graph.png
-
-To get started you must first import the library.  Find your favorite `[.js,.ts]` file and import `timelorde`
-
-```ts
-
-```
-
-And state what happens step-by-step.
+The seasonality signals represent the signals that have a period to them. We currently have only one signal that represents seasonality.
+* `Sinusoidal`
 
 ### Building
 

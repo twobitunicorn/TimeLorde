@@ -3,7 +3,8 @@
 # Time Lorde
 Creating time series for demos or testing purposes can be challenging.  The `timelorde` library solves this problem for you.  Using `Luxon` dates as native units of the `x` axis makes it easy to produce signals that work over arbitrary intervals of time.  The library makes it convenient to produce various time series with `trends`, `seasonality`, and `noise`.
 
-https://github.com/twobitunicorn/TimeLorde/raw/main/img/intro_graph.png
+![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/intro_graph.png)
+
 
 ## Installing / Getting started
 
@@ -79,7 +80,7 @@ series.reduce((acc, {date, value}) => {return acc + `${date.toISODate()},${value
 
 Taking the values for this series and putting it into our favorite graphing software we get the following graph.
 
-https://github.com/twobitunicorn/TimeLorde/raw/main/img/working_graph.png
+![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/working_graph.png)
 
 For the rest of the *README* we will only show the resulting graph of the series and not the data of the series.
 

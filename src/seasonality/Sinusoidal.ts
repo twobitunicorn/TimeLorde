@@ -11,29 +11,29 @@ import { Duration, Interval } from "luxon";
 export class Sinusoidal extends Signal {
 	amplitude: number;
 	period: Duration;
-	intercept: number;
 	offset: Duration;
+	intercept: number;
 
 	/**
 	 * Creates an instance of sinusoidal.
 	 * @param amplitude
 	 * @param period
-	 * @param [shift] The vertical shift of the wave
 	 * @param [offset] The phase of the wave
+	 * @param [shift] The vertical shift of the wave
 	 */
 	constructor(
 		amplitude: number,
 		period: Duration,
-		intercept: number = 0.0,
-		offset: Duration = Duration.fromObject({ milliseconds: 0 })
+		offset: Duration = Duration.fromObject({ milliseconds: 0 }),
+		intercept: number = 0.0
 	) {
 		assert(period.valueOf() > 0, "period must have some duration");
 
 		super();
 		this.amplitude = amplitude;
 		this.period = period;
-		this.intercept = intercept;
 		this.offset = offset;
+		this.intercept = intercept;
 	}
 
 	_sample(

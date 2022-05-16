@@ -171,7 +171,6 @@ We will assume the following conditions for our simulated series:
 -   The approximate max is 25&deg;C and the average min is -1&deg;C
 -   The yearly seasonalities are impacted by the warming trend of temperatures and results in bigger yearly temperature swings
 -   The noise of the series increases as the temperature increases.
--   The daily seasonality is not impacted by the trend
 -   The series sample must be four years long
 
 First we import all the necessary types
@@ -285,6 +284,19 @@ will give us the graph over a four year span
 
 which is the model we are looking for.
 
+### Offset Adjustments
+You may need to adjust the offset of sinusoidal signal depending on the exact dates of your series.  The  signal for our working example starts out at 12&deg;C, grows to its max of 25&deg;C at 3 months, comes back down to 12&deg;C at 6 months, down to the minimum -1&deg;C at 9 months and returns at 12&deg;C by the end of the year.  For most of us in Northern America it would be awkward if you started your series in August and the hottest time of the year was at the end of November. 
+
+When constructing a sinusoidal signal we can adjust the offset of the signal give us an even more realistic sampling of the temperatures between two dates.  In our working example, if we adjusted the offset of our `yearly` variable to be -3 months 
+
+```ts
+const yearly = new Sinusoidal(13, Duration.fromObject({ years: 1 }), Duration.fromObject({months: -3}));
+```
+
+we can see that we have pushed the curve over to the left giving us a starting signal that more matches what the temperatures would be like in August.
+
+![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/offset_yearly.png)
+
 ## Wrapping up
 
 This library will help you make amazing time series models that will wow and impress your friends and family. With the various types of signals you can create series that show trends and seasonality, while adding realism through noise signals. This library though impressive is pretty small and is looking to grow.
@@ -293,7 +305,6 @@ We are hoping to add the following:
 
 -   Partial Intervals -- Do not produce results for example, weekends.
 -   Glitches -- All series have glitches, we should include them
--   Partial Series -- Sometimes you don't want a result for a particular data point
 
 There are a few other time series libraries out there. If you are using python or Java they will have you covered.
 

@@ -293,7 +293,6 @@ We are hoping to add the following:
 
 -   Partial Intervals -- Do not produce results for example, weekends.
 -   Glitches -- All series have glitches, we should include them
--   Partial Series -- Sometimes you don't want a result for a particular data point
 
 There are a few other time series libraries out there. If you are using python or Java they will have you covered.
 

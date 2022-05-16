@@ -24,8 +24,8 @@ export class Sinusoidal extends Signal {
 	constructor(
 		amplitude: number,
 		period: Duration,
-		offset: Duration = Duration.fromObject({ milliseconds: 0 }),
-		intercept: number = 0.0
+		offset: Duration = Duration.fromObject({ milliseconds: 0.0 }),
+		intercept = 0.0
 	) {
 		assert(period.valueOf() > 0, "period must have some duration");
 

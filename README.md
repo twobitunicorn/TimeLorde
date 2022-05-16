@@ -74,7 +74,7 @@ The return type of `Signal.sample` is an array of type `Sample[]`.  The `Sample`
 
 Using our series we can transform the `Sample` type into something our graphing software can recognize.  The one I use expects a CVS input.  I achieve this using a reduction on the series below.
 
-```
+```ts
 series.reduce((acc, {date, value}) => {return acc + `${date.toISODate()},${value.toFixed(2)}\n`}, "date,values\n")
 ```
 
@@ -96,113 +96,180 @@ The noise signals represent a class of signals that help you define the noise yo
 * `Gaussian`
 * `Red`
 
-```ts
-import { DateTime, Duration, Interval } from '@timelorde/luxon'
-import { Gaussian } from '@timelorde/noise'
-
-const start = DateTime.fromISO("2021-03-03")
-const duration = Duration.fromObject({year: 1})
-const interval = Interval.after(start, duration)
-const noise = new Flat(7)
-const series = trend.sample(interval, Duration.fromObject({hours: 12}))
-```
-
 ### Seasonality
 The seasonality signals represent the signals that have a period to them. We currently have only one signal that represents seasonality.
 * `Sinusoidal`
 
-### Building
+Along with amplitude and frequency, we can also set the offset of the start of the signal.   A negative offset will push the signal to the left that many units and a positive offset will shift the signal to the right. 	
+	
+### Composition
+We currently have two types of signal composition in `timelorde`.  They are the `add` and `mcl` methods of the `Signal` type.   The `add` method takes two signals and adds the signals underlying values together while the `mul` method takes two signals and multiplies their values together.
 
-If your project needs some additional steps for the developer to build the
-project after some code changes, state them here:
+For example,
+```ts
+import { Interval, DateTime, Duration,  } from "timelorde/luxon";
+import {Linear, Sinusoidal} from "timelorde";
 
-```shell
-./configure
-make
-make install
+
+const trend = new Linear(2, Duration.fromObject({days: 1}))
+const seasonality = new Sinusoidal(2, Duration.fromObject({hours: 12}))
+const timeseries = trend.add(seasonality)
+
+const start = DateTime.fromISO("2022-03-03")
+const end = DateTime.fromISO("2022-03-10")
+const interval = Interval.fromDateTimes(start, end)
+
+const series = timeseries.sample(interval, Duration.fromObject({hours: 1}))
 ```
 
-Here again you should state what actually happens when the code above gets
-executed.
+will produce the following graph.
+![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/add_graph.png)
 
-### Deploying / Publishing
+whereas multiplying the `trend` and `seasonality` in the following example
 
-In case there's some step you have to take that publishes this project to a
-server, this is the right time to state it.
+```ts
+import { Interval, DateTime, Duration,  } from "timelorde/luxon";
+import {Linear, Sinusoidal} from "timelorde";
 
-```shell
-packagemanager deploy awesome-project -s server.com -u username -p password
+
+const trend = new Linear(2, Duration.fromObject({days: 1}))
+const seasonality = new Sinusoidal(2, Duration.fromObject({hours: 12}))
+const timeseries = trend.mul(seasonality)
+
+const start = DateTime.fromISO("2022-03-03")
+const end = DateTime.fromISO("2022-03-10")
+const interval = Interval.fromDateTimes(start, end)
+
+const series = timeseries.sample(interval, Duration.fromObject({hours: 1}))
 ```
 
-And again you'd need to tell what the previous code actually does.
+will give us the following graph.
 
-## Features
+![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/mul_graph.png)
 
-What's all the bells and whistles this project can perform?
-* What's the main functionality
-* You can also do another thing
-* If you get really randy, you can even do this
+### Brief Tutorial
+Assume we are tasked with simulating seasonal temperatures here on earth with a slight trend towards a warmer world. This is a working example from the excellent [mockseries](https://mockseries.catheu.tech/) library.
 
-## Configuration
+We will assume the following conditions for our simulated series:
+* The temperature has an average value of 12&deg;C
+* The temperature is slowly rising by 0.1&deg;C over a year
+* The approximate max is 25&deg;C and the average min is -1&deg;C
+* The yearly seasonalities are impacted by the warming trend of temperatures and results in bigger yearly temperature swings
+* The noise of the series increases as the temperature increases.
+* The daily seasonality is not impacted by the trend
+* The series sample must be four years long
 
-Here you should write what are all of the configurations a user can enter when
-using the project.
+First we import all the necessary types
 
-#### Argument 1
-Type: `String`  
-Default: `'default value'`
-
-State what an argument does and how you can use it. If needed, you can provide
-an example below.
-
-Example:
-```bash
-awesome-project "Some other value"  # Prints "You're nailing this readme!"
+```ts
+import { Interval, DateTime, Duration,  } from "timelorde/luxon";
+import {Flat, Linear, Sinusoidal, Gaussian} from "timelorde";
 ```
 
-#### Argument 2
-Type: `Number|Boolean`  
-Default: 100
+And we will use a variable `temperature` to represent our current working temperature signal.
 
-Copy-paste as many of these as you need.
+```ts
+let temperature;
+```
 
-## Contributing
+and then we start constructing the signals that we need.  We model our average constraint by creating a `Flat` signal with the value 12.
 
-When you publish something open source, one of the greatest motivations is that
-anyone can just jump in and start contributing to your project.
+```ts
+const average = new Flat(12)
+```
 
-These paragraphs are meant to welcome those kind souls to feel that they are
-needed. You should state something like:
+We model the warming constraint with a `Linear` signal that grows by 0.1&deg;C over a period of one year.
 
-"If you'd like to contribute, please fork the repository and use a feature
-branch. Pull requests are warmly welcome."
+```ts
+const warming = new Linear(0.1, Duration.fromObject({years: 1}))
+```
 
-If there's anything else the developer needs to know (e.g. the code style
-guide), you should link it here. If there's a lot of things to take into
-consideration, it is common to separate this section to its own file called
-`CONTRIBUTING.md` (or similar). If so, you should say that it exists here.
+Adding these two signals together
 
-## Links
+```ts
+temperature = average.add(warming)
+``` 
 
-Even though this information can be found inside the project on machine-readable
-format like in a .json file, it's good to include a summary of most useful
-links to humans using your project. You can include links like:
+and sampling over four years with the granularity of one day
 
-- Project homepage: https://your.github.com/awesome-project/
-- Repository: https://github.com/your/awesome-project/
-- Issue tracker: https://github.com/your/awesome-project/issues
-  - In case of sensitive bugs like security vulnerabilities, please contact
-    my@email.com directly instead of using issue tracker. We value your effort
-    to improve the security and privacy of this project!
-- Related projects:
-  - Your other project: https://github.com/your/other-project/
-  - Someone else's project: https://github.com/someones/awesome-project/
+```ts
+temperature.sample(interval, Duration.fromObject({days: 1}))
+```
 
+gives us a graph that demonstrates a 0.4&deg;C growth from 12&deg;C to 12.4&deg;C over the span of four years.
+![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/warming_step.png)
+
+### Seasonality
+Our seasonal changes include both yearly and daily.  For our yearly seasonal change we want to show the progression of temperatures through winter, spring, summer, and fall.  To calculate the amplitude we need we take the difference between  the max and min temperatures and divide it by two.  In our example the difference between 25&deg;C and -1&deg;C is 26&deg;C.  Dividing this value by 2 and using it as our amplitude we can model the yearly seasonality with creating a new  `Sinusoidal`  instance with an amplitude of 13 and a duration over one year.
+
+
+```ts
+const yearly = new Sinusoidal(13, Duration.fromObject({years: 1}))
+```
+
+If we add the yearly signal to the average and warming signal 
+
+```ts
+temperature = average.add(warming).add(yearly)
+```
+
+we have a sinusoidal wave over four years that has a constant amplitude of 13 but with the average increase of 0.4&deg;C.
+
+  ![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/seasonal_graph.png)
+
+However, our constraints require us to increase the amplitude of the sinusoidal wave as the temperature gets warmer.  This is a common pattern in modeling signals and worth pointing out.  We can adjust the growth of our warming signal by multiplying it by the yearly seasonal signal.
+
+```ts
+const growth = warming.mul(yearly)
+```
+
+Sampling over four years with the growth signal gives us the graph
+
+  ![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/step_growth.png)
+
+which gives a signal for a warming that varies more over the four year growth of the yearly seasonal temperatures.  The growth only varies between 5 and -5 degrees at the end of four years which is what we are looking for.
+
+Using the `growth` signal we can replace the `warming` signal in our temperature signal
+
+```ts
+temperature = average.add(growth).add(yearly)
+``` 
+
+Graphing `temperature` over four years with a 1 day granularity gives us the graph
+![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/step_scaled.png)
+in which we can now see the growth of the amplitude over the four years.
+
+### Noise
+
+do not follow the smooth curves of our current model.  
+Realistic signals do not follow the smooth curves of our previous values of 
+
+As temperature naturally fluctuates over time; creating realistic signals requires adding noise
+
+and does not follow the smooth signal as we have constructed so far.  To achieve a more realistic looking graph we will add some noise.  We construct some Gaussian noise by creating a new `Gaussian` instance and a reasonable number of 1 for the mean and 0.5 for the standard deviation.  Reasonable is what you decide it to be in the context of your domain.
+
+```ts
+let noise = new Gaussian(1, 0.5)
+```
+
+Our requirements state that the noise of the signal must grow as the signal amplitude grows.  With our declared variable `grow` we are able to create new noise that will increase the standard deviation over time.  We multiply `noise` with `growth` to get our new noise
+
+```ts
+noise = noise.mul(growth)
+```
+
+graphing the noise over a span of four years gives us the graph
+
+![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/step_noise.png)
+
+where we can see that the noise varies between 1.5 and -1.5 for the first year and between 9.5 to -9.5 at the fourth year.  Adding this noise signal to the current signal for temperature 
+
+```ts
+temperature = average.add(growth).add(yearly).add(noise)
+```
+
+will give us the graph over a four year span
+![](https://github.com/twobitunicorn/TimeLorde/raw/main/img/step_add_noise.png)
 
 ## Licensing
-
-One really important part: Give your project a proper license. Here you should
-state what the license is and how to find the text version of the license.
-Something like:
-
 "The code in this project is licensed under MIT license."
